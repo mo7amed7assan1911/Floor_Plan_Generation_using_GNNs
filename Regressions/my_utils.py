@@ -22,10 +22,6 @@ from shapely.geometry import Point, Polygon, MultiPolygon
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-
-
-
-
 # Functions
 def draw_graph(G):
     """ 
@@ -363,5 +359,3 @@ class GraphBoxes():
         h_predicted = self.prediction[:, 1]
         
         return w_predicted[room_index], h_predicted[room_index]
-
-
