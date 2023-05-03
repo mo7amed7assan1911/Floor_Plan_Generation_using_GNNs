@@ -1,0 +1,183 @@
+from torch_geometric.nn import GlobalAttention
+from torch_geometric.nn.dense import DenseGCNConv
+
+class GATNet(torch.nn.Module):
+    def __init__(self, num_graph_node_features, num_boundary_node_features):
+        super(GATNet, self).__init__()
+        
+        self.graph_conv1 = GATConv(num_graph_node_features, 32, heads=4)
+        
+        input_of_conv2   = num_graph_node_features + 32*4
+        self.graph_conv2 = GATConv(input_of_conv2, 32, heads=8)
+        
+        input_of_conv3   = num_graph_node_features + 32*8
+        self.graph_conv3 = GATConv(input_of_conv3, 64, heads=8)
+        
+        input_of_conv4   = num_graph_node_features + 64*8
+        self.graph_conv4 = GATConv(input_of_conv4, 128, heads=8)
+        # self.graph_conv5 = GATConv(128*8, 128, heads=8)
+        # self.graph_conv6 = GATConv(128*8, 128, heads=16)
+        # self.graph_conv7 = GATConv(128*16, 256, heads=16)
+        # self.graph_conv8 = GATConv(256*16, 256, heads=16)
+        shape_of_graphs_befor_concatination = num_graph_node_features + 128*8
+        
+        self.boundary_conv1 = GATConv(num_boundary_node_features, 32, heads=4)
+        input_of_boundary_conv2 = 32*4 + num_boundary_node_features
+        self.boundary_conv2 = GATConv(input_of_boundary_conv2, 32, heads=8)
+        # self.boundary_conv3 = GATConv(32*8, 64, heads=8)
+        # self.boundary_conv4 = GATConv(64*8, 128, heads=8)
+        # self.boundary_conv5 = GATConv(128*8, 128, heads=8)
+        shape_of_boundary_befor_concatination = num_boundary_node_features + 32 * 8
+        
+        # Output of graph_conv8 + output of boundary_conv5 + 2 step connection from real nodes and boundary nodes
+        inputs_concatination = shape_of_graphs_befor_concatination + shape_of_boundary_befor_concatination
+        self.Concatination1  = GATConv(inputs_concatination, 128, heads=8)
+        # self.Concatination2  = GATConv(128*8, 64, heads=8)
+        # self.Concatination3  = GATConv(64*8, 64, heads=8)
+        # self.Concatination4  = GATConv(64*8, 32, heads=8)
+        # self.Concatination5  = GATConv(32*8, 32*4)
+        
+        # self.lin1 = nn.Linear(inputs_concatination, 256)
+        # self.lin2 = nn.Linear(256, 32)
+
+        self.width_layer1  = nn.Linear(128*8, 128)
+        self.height_layer1 = nn.Linear(128*8, 128)
+        
+        # self.width_layer2  = nn.Linear(256, 128)
+        # self.height_layer2 = nn.Linear(256, 128)
+        
+        # self.width_layer3  = nn.Linear(128, 32)
+        # self.height_layer3 = nn.Linear(128, 32)
+        
+        # self.width_layer4  = nn.Linear(32, 8)
+        # self.height_layer4 = nn.Linear(32, 8)
+        
+        self.width_output  = nn.Linear(128, 1)
+        self.height_output = nn.Linear(128, 1)
+        
+        
+        self.boundary_pool = torch.nn.AdaptiveAvgPool1d(1)
+        self.dropout = torch.nn.Dropout(0.2)
+        
+    def forward(self, graph, boundary):
+        x_graph, g_edge_index, g_edge_attr, g_batch = graph.x, graph.edge_index, graph.edge_attr, graph.batch
+        x_boundary, b_edge_indexy, b_edge_attr, b_batch = boundary.x, boundary.edge_index, boundary.edge_attr, boundary.batch
+        
+        NUM_OF_NODES = x_graph.shape[0]
+        # During testing, as we input only one graph.
+        if g_batch == None:
+            g_batch = torch.zeros(x_graph.shape[0], dtype=torch.long)
+        if b_batch == None:
+            b_batch = torch.zeros(x_boundary.shape[0], dtype=torch.long)
+        
+        
+        x_graph_res = x_graph
+        x_boundary_res = x_boundary
+        
+        # Passing the graph throught a message passing to embed its features
+        x_graph = F.leaky_relu(self.graph_conv1(x_graph, g_edge_index, g_edge_attr))
+        x_graph = self.dropout(x_graph) # Concatinate with step connection from real values.
+        x_graph = torch.cat([x_graph, x_graph_res], dim=1)
+        
+        
+        x_graph = F.leaky_relu(self.graph_conv2(x_graph, g_edge_index, g_edge_attr))
+        x_graph = self.dropout(x_graph)
+        x_graph = torch.cat([x_graph, x_graph_res], dim=1)
+        
+        x_graph = F.leaky_relu(self.graph_conv3(x_graph, g_edge_index))
+        x_graph = self.dropout(x_graph) 
+        x_graph = torch.cat([x_graph, x_graph_res], dim=1)
+        
+        x_graph = F.leaky_relu(self.graph_conv4(x_graph, g_edge_index))
+        x_graph = self.dropout(x_graph) 
+        x_graph = torch.cat([x_graph, x_graph_res], dim=1)
+        
+        # x_graph = F.leaky_relu(self.graph_conv5(x_graph, g_edge_index))
+        # x_graph = F.leaky_relu(self.graph_conv6(x_graph, g_edge_index))
+        # x_graph = self.dropout(x_graph)
+        # x_graph = F.leaky_relu(self.graph_conv7(x_graph, g_edge_index))
+        # x_graph = F.leaky_relu(self.graph_conv8(x_graph, g_edge_index))
+        # x_graph = self.dropout(x_graph)
+        
+        
+        # Passing the boundary throught a message passing to embed its features
+        x_boundary = F.leaky_relu(self.boundary_conv1(x_boundary, b_edge_indexy, b_edge_attr))
+        x_boundary = self.dropout(x_boundary)
+        x_boundary = torch.cat([x_boundary, x_boundary_res], dim=1)
+        
+        x_boundary = F.leaky_relu(self.boundary_conv2(x_boundary, b_edge_indexy, b_edge_attr))
+        x_boundary = self.dropout(x_boundary)
+        x_boundary = torch.cat([x_boundary, x_boundary_res], dim=1)
+        
+        # x_boundary = F.leaky_relu(self.boundary_conv3(x_boundary, b_edge_indexy))
+        # x_boundary = self.dropout(x_boundary)
+        # x_boundary = F.leaky_relu(self.boundary_conv4(x_boundary, b_edge_indexy))
+        # x_boundary = F.leaky_relu(self.boundary_conv5(x_boundary, b_edge_indexy))
+        # x_boundary = self.dropout(x_boundary)
+
+        # Pooling the bounadry to 1D vector by getting max value in each feature for all nodes.
+        x_boundary_pooled = F.max_pool1d(x_boundary.transpose(0, 1), kernel_size=x_boundary.shape[0]).view(1, -1)
+        
+        # Concatinating the graph & the boundary
+        x = torch.cat([x_graph, x_boundary_pooled.repeat(NUM_OF_NODES, 1)], dim=1)
+        x = F.leaky_relu(self.Concatination1(x, g_edge_index))
+        x = self.dropout(x)
+        # x = F.leaky_relu(self.Concatination2(x, g_edge_index))
+        # x = self.dropout(x)
+        # x = F.leaky_relu(self.Concatination3(x, g_edge_index))
+        # x = self.dropout(x)
+        # x = F.leaky_relu(self.Concatination4(x, g_edge_index))
+        # x = self.dropout(x)
+        # x = F.leaky_relu(self.Concatination5(x, g_edge_index))
+        # x = self.dropout(x)
+        
+        # x = F.leaky_relu(self.lin1(x))
+        # x = self.dropout(x)
+        # x = F.leaky_relu(self.lin2(x))
+        # x = self.dropout(x)
+        
+        
+        width = F.leaky_relu(self.width_layer1(x))
+        # width = F.leaky_relu(self.width_layer2(width))
+        # width = F.leaky_relu(self.width_layer3(width))
+        # width = F.leaky_relu(self.width_layer4(width))
+        width = self.dropout(width)
+        width = self.width_output(width)
+        
+        height = F.leaky_relu(self.height_layer1(x))
+        # height = F.leaky_relu(self.height_layer2(height))
+        # height = F.leaky_relu(self.height_layer3(height))
+        # height = F.leaky_relu(self.height_layer4(height))
+        height = self.dropout(height)
+        height = self.height_output(height)
+        
+        return width.squeeze(), height.squeeze()
+
+num_graph_node_features = Graphs_pyTorch[0].x.shape[1]
+num_boundary_node_features = Boundaries_pyTorch[0].x.shape[1]
+
+model = GATNet(num_graph_node_features, num_boundary_node_features)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = model.to(device)
+
+# to monitor the loss & accuracy.
+errors = []
+acc = []
+
+model
+GATNet(
+  (graph_conv1): GATConv(9, 32, heads=4)
+  (graph_conv2): GATConv(137, 32, heads=8)
+  (graph_conv3): GATConv(265, 64, heads=8)
+  (graph_conv4): GATConv(521, 128, heads=8)
+  (boundary_conv1): GATConv(3, 32, heads=4)
+  (boundary_conv2): GATConv(131, 32, heads=8)
+  (Concatination1): GATConv(1292, 128, heads=8)
+  (width_layer1): Linear(in_features=1024, out_features=128, bias=True)
+  (height_layer1): Linear(in_features=1024, out_features=128, bias=True)
+  (width_output): Linear(in_features=128, out_features=1, bias=True)
+  (height_output): Linear(in_features=128, out_features=1, bias=True)
+  (boundary_pool): AdaptiveAvgPool1d(output_size=1)
+  (dropout): Dropout(p=0.2, inplace=False)
+)
