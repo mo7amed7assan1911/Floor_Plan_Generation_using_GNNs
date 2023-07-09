@@ -199,17 +199,6 @@ def centroids_to_graph(floor_plan, living_to_all=False, all_conected=False):
 
     return G
 
-def draw_graph(G):
-    """
-    This function is used to draw the graph of rooms and user constrains.
-    """
-    #  nodes positions for drawing, note that we invert the y pos
-    pos = {node: (G.nodes[node]['actualCentroid_x'], -G.nodes[node]['actualCentroid_y']) for node in G.nodes}
-    
-    colormap = [room_color[G.nodes[node]['roomType_name']]/255 for node in G]
-    
-    nx.draw(G, pos=pos, node_color=colormap, with_labels=True, font_size=12)
-
 def draw_graph_boundary(G):
     """
     This function is used to draw the graph of the boundary of the floor plan.
@@ -253,7 +242,6 @@ class FloorPlan_multipolygon():
         # Using pytorhc Garphs
         
         centroid = (self.graph.x[room_index][-2].item(), self.graph.x[room_index][-1].item())
-        # category = self.graph.x[:, 0][room_index].item()
         category = torch.argmax(self.graph.x[:, :7], axis=1)[room_index].item()
         w_pre, h_pre = self.get_predictions(room_index)
             
@@ -315,75 +303,93 @@ class FloorPlan_multipolygon():
 
         all_polygons = []
         all_polygons.append(boundary)
-        # similar_polygons_2 = defaultdict(list)
-        # for room_category, polygons in similar_polygons.items():
-        #     if room_category in (2, 3): # If bathroom or kitchen.
-        #         # combined_polygon = unary_union(polygons)
-        #         # all_polygons.append(combined_polygon)
-        #         # for poly in polygons:
-        #         #     similar_polygons_2[room_category].append(poly)
+        similar_polygons_2 = defaultdict(list)
+        already_inside_bath = False
+        for room_category, polygons in similar_polygons.items():
+            # if room_category == 2:
+            #     for poly in polygons:
+            #         similar_polygons_2[room_category].append(poly)
                 
-        #         for bath_or_kitchen in polygons:
-        #             if any(bath_or_kitchen.intersects(room) for room in similar_polygons[1]): # Chcek if the current bathroom or kitchen intersectes with any room
-        #                 for i, room in enumerate(similar_polygons[1]):
-        #                     if bath_or_kitchen.intersects(room):
-        #                         intersection = bath_or_kitchen.intersection(room)
-        #                         if intersection.area >= (0.3 * bath_or_kitchen.area):
-        #                             # new_bath_or_kitchen = intersection
-        #                             bath_or_kitchen = bath_or_kitchen.intersection(room.buffer(-3, cap_style=3, join_style=2))
-        #                             # bath_or_kitchen   = room.intersection(bath_or_kitchen.buffer(-3, cap_style=3, join_style=3))
-        #                         else:
-        #                             ## If we need to cut from the room
-        #                             # new_room = room.difference(intersection.buffer(50))
-        #                             # similar_polygons[1][i] = new_room
+            # elif room_category == 3:
+            #     if len(polygons) == 1:
+            #         similar_polygons_2[room_category].append(polygons[0])
+            #     else:
+            #         # check most polgon has intersection with other polygons
+            #         for 
+            
+            
+                
+                
+            if room_category in (2, 3): # If bathroom or kitchen.
+                # combined_polygon = unary_union(polygons)
+                # all_polygons.append(combined_polygon)
+                # for poly in polygons:
+                #     similar_polygons_2[room_category].append(poly)
+                
+                for bath_or_kitchen in polygons:
+                    if any(bath_or_kitchen.intersects(room) for room in similar_polygons[1]): # Chcek if the current bathroom or kitchen intersectes with any room
+                        for i, room in enumerate(similar_polygons[1]):
+                            if bath_or_kitchen.intersects(room):
+                                intersection = bath_or_kitchen.intersection(room)
+                                if (intersection.area >= (0.2 * bath_or_kitchen.area)) and (already_inside_bath == False):
+                                    # new_bath_or_kitchen = intersection
+                                    print('>= 50%')
+                                    bath_or_kitchen = bath_or_kitchen.intersection(room.buffer(-3, cap_style=3, join_style=2))
+                                    already_inside_bath = True
+                                    # bath_or_kitchen   = room.intersection(bath_or_kitchen.buffer(-3, cap_style=3, join_style=3))
+                                else:
+                                    print('Not >= 50%')
+                                    ## If we need to cut from the room
+                                    room = room.difference(intersection.buffer(0.3))
+                                    similar_polygons[1][i] = room
                                     
-        #                             ## If we need to cut from the bathroom or kitchen
-        #                             bath_or_kitchen = bath_or_kitchen.difference(intersection.buffer(4))
+                                    ## If we need to cut from the bathroom or kitchen
+                                    bath_or_kitchen = bath_or_kitchen.difference(intersection.buffer(4))
                                     
-        #             similar_polygons_2[room_category].append(bath_or_kitchen)
-
-        #     else: # If rooms
-        #         existing_polygons = []
-        #         for poly in polygons: # for room in rooms
-        #             # print(f'Current poly: {poly.centroid}')
-        #             if any(poly.intersects(exist) for exist in existing_polygons):
-        #                 for exist in existing_polygons:
-        #                     if poly.intersects(exist): # If there is an intersection between current poly and the checking polygon.
-        #                         # print(f'Intersects with: {exist.centroid}')
-        #                         intersection = poly.intersection(exist)
-        #                         if exist.area > poly.area:
-        #                             # print('1')
-        #                             difference_polygon = exist.difference(intersection.buffer(4))
+                    similar_polygons_2[room_category].append(bath_or_kitchen)
+                    
+            else: # If rooms
+                existing_polygons = []
+                for poly in polygons: # for room in rooms
+                    # print(f'Current poly: {poly.centroid}')
+                    if any(poly.intersects(exist) for exist in existing_polygons):
+                        for exist in existing_polygons:
+                            if poly.intersects(exist): # If there is an intersection between current poly and the checking polygon.
+                                # print(f'Intersects with: {exist.centroid}')
+                                intersection = poly.intersection(exist)
+                                if exist.area < poly.area:
+                                    # print('1')
+                                    difference_polygon = exist.difference(intersection.buffer(4))
                                     
-        #                             # We cut from the exist so we will remove the old version and add the new version.
-        #                             similar_polygons_2[room_category].remove(exist)
-        #                             similar_polygons_2[room_category].append(difference_polygon)
+                                    # We cut from the exist so we will remove the old version and add the new version.
+                                    similar_polygons_2[room_category].remove(exist)
+                                    similar_polygons_2[room_category].append(difference_polygon)
                                     
-        #                             # Also we add the current polygon.
-        #                             similar_polygons_2[room_category].append(poly)
+                                    # Also we add the current polygon.
+                                    similar_polygons_2[room_category].append(poly)
                                     
-        #                             # The same step we didi in similar_polygons_2 we make it here to make the existing_polys the same.
-        #                             existing_polygons.remove(exist)
-        #                             existing_polygons.append(difference_polygon)
+                                    # The same step we didi in similar_polygons_2 we make it here to make the existing_polys the same.
+                                    existing_polygons.remove(exist)
+                                    existing_polygons.append(difference_polygon)
                                     
-        #                             existing_polygons.append(poly)
+                                    existing_polygons.append(poly)
                                     
-        #                         else:
-        #                             # print('2')
-        #                             difference_polygon = poly.difference(intersection.buffer(4))
-        #                             similar_polygons_2[room_category].append(difference_polygon)
-        #                             # existing_polygons.append(difference_polygon)
-        #                             # similar_polygons_2[room_category].append(exist)
+                                else:
+                                    # print('2')
+                                    difference_polygon = poly.difference(intersection.buffer(4))
+                                    similar_polygons_2[room_category].append(difference_polygon)
+                                    # existing_polygons.append(difference_polygon)
+                                    # similar_polygons_2[room_category].append(exist)
                                     
-        #             else: # For the first one
-        #                 # print('No intersection')
-        #                 existing_polygons.append(poly)
-        #                 similar_polygons_2[room_category].append(poly)
+                    else: # For the first one
+                        # print('No intersection')
+                        existing_polygons.append(poly)
+                        similar_polygons_2[room_category].append(poly)
                         
                         
-        for _, polygons in similar_polygons.items():
+        for _, polygons in similar_polygons_2.items():
             all_polygons.append(MultiPolygon(polygons))
-            # all_polygons.append(unary_union(polygons))    
+        
         if door:
             all_polygons.append(door)
             

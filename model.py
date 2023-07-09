@@ -75,6 +75,7 @@ class GATNet(torch.nn.Module):
         x_graph = self.dropout(x_graph) 
         x_graph = torch.cat([x_graph, x_graph_res], dim=1)
         
+        
         # Passing the boundary throught a message passing to embed its features
         x_boundary = F.leaky_relu(self.boundary_conv1(x_boundary, b_edge_indexy, b_edge_attr))
         x_boundary = self.dropout(x_boundary)
@@ -83,7 +84,7 @@ class GATNet(torch.nn.Module):
         x_boundary = F.leaky_relu(self.boundary_conv2(x_boundary, b_edge_indexy, b_edge_attr))
         x_boundary = self.dropout(x_boundary)
         x_boundary = torch.cat([x_boundary, x_boundary_res], dim=1)
-        
+
         # Pooling the bounadry to 1D vector by getting max value in each feature for all nodes.
         x_boundary_pooled = F.max_pool1d(x_boundary.transpose(0, 1), kernel_size=x_boundary.shape[0]).view(1, -1)
         
@@ -92,22 +93,21 @@ class GATNet(torch.nn.Module):
         x = F.leaky_relu(self.Concatination1(x, g_edge_index))
         x = self.dropout(x)
         
+        
         width = F.leaky_relu(self.width_layer1(x))
-
         width = self.dropout(width)
         width = self.width_output(width)
         
         height = F.leaky_relu(self.height_layer1(x))
-
         height = self.dropout(height)
         height = self.height_output(height)
         
         return width.squeeze(), height.squeeze()
 
-def load_model(path):
+def load_model(checkpoint_path, device):
     model = GATNet(9, 3)
+    model = model.to(device)
     
-    checkpoint_path = path
     checkpoint = torch.load(checkpoint_path)
     
     model.load_state_dict(checkpoint['model_state_dict'])
