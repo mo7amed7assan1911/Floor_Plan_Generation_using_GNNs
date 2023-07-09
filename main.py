@@ -1,6 +1,6 @@
 from utils import *
 from model import *
-
+from upload import *
 
 def get_info():
     """
@@ -11,14 +11,20 @@ def get_info():
             - bathroom_centroids: [(81, 105), (55, 151), (134, 105)]
             - kitchen_centroids: [(81, 105), (55, 151), (134, 105)]
     """
-    boundary_wkt = "POLYGON ((58.18181818181817 69.85672370603027, 230.4 69.85672370603027, 230.4 105.54157219087877, 211.7818181818182 105.54157219087877, 211.7818181818182 200.183996433303, 25.599999999999994 200.183996433303, 25.599999999999994 58.99611764542421, 58.18181818181817 58.99611764542421, 58.18181818181817 69.85672370603027))"
-
-    front_door_wkt = "POLYGON ((56.16288055733307 55.816003566697006, 30.721967927515397 55.816003566697006, 30.721967927515397 58.99611764542421, 56.16288055733307 58.99611764542421, 56.16288055733307 55.816003566697006))"
-
+    boundary_wkt = "POLYGON ((25.599999999999994 65.32413793103447, 200.38620689655173 65.32413793103447, 200.38620689655173 75.91724137931033, 230.4 75.91724137931033, 230.4 190.67586206896553, 67.97241379310344 190.67586206896553, 67.97241379310344 176.55172413793102, 25.599999999999994 176.55172413793102, 25.599999999999994 65.32413793103447))"
+    
+    front_door_wkt = "POLYGON ((38.436315932155225 179.69850789734912, 63.610586007499926 179.69850789734912, 63.610586007499926 176.55172413793102, 38.436315932155225 176.55172413793102, 38.436315932155225 179.69850789734912))"
+    
     # Data of the inner rooms or bathrooms
-    room_centroids  = [(198, 87), (174, 166)]
-    bathroom_centroids = [(51, 169), (155, 91)]
-    kitchen_centroids = [(44, 105)]
+    room_centroids  = [(201, 163), (193, 106)]
+    bathroom_centroids = [(91, 91), (52, 95)]
+    kitchen_centroids = [(137, 89)]
+    
+    # boundary_wkt = input("Enter the boundary as str: ")
+    # front_door_wkt = input("Enter the front door as str: ")
+    # room_centroids = input("Enter the room centroids as list of tuples: ")
+    # bathroom_centroids = input("Enter the bathroom centroids as list of tuples: ")
+    # kitchen_centroids = input("Enter the kitchen centroids as list of tuples: ")
     
     return boundary_wkt, front_door_wkt, room_centroids, bathroom_centroids, kitchen_centroids
 
@@ -114,16 +120,16 @@ def preProcessing_toGraphs(Boundary, front_door, room_centroids, bathroom_centro
 if __name__ == '__main__':
     
     # Get the data
-    # Boundary, front_door, room_centroids, bathroom_centroids, kithchen_centroids = get_info()
+    Boundary, front_door, room_centroids, bathroom_centroids, kitchen_centroids = get_info()
     
-    Boundary = "POLYGON ((58.18181818181817 69.85672370603027, 230.4 69.85672370603027, 230.4 105.54157219087877, 211.7818181818182 105.54157219087877, 211.7818181818182 200.183996433303, 25.599999999999994 200.183996433303, 25.599999999999994 58.99611764542421, 58.18181818181817 58.99611764542421, 58.18181818181817 69.85672370603027))"
+    # Boundary = "POLYGON ((58.18181818181817 69.85672370603027, 230.4 69.85672370603027, 230.4 105.54157219087877, 211.7818181818182 105.54157219087877, 211.7818181818182 200.183996433303, 25.599999999999994 200.183996433303, 25.599999999999994 58.99611764542421, 58.18181818181817 58.99611764542421, 58.18181818181817 69.85672370603027))"
 
-    front_door = "POLYGON ((56.16288055733307 55.816003566697006, 30.721967927515397 55.816003566697006, 30.721967927515397 58.99611764542421, 56.16288055733307 58.99611764542421, 56.16288055733307 55.816003566697006))"
+    # front_door = "POLYGON ((56.16288055733307 55.816003566697006, 30.721967927515397 55.816003566697006, 30.721967927515397 58.99611764542421, 56.16288055733307 58.99611764542421, 56.16288055733307 55.816003566697006))"
 
-    # Data of the inner rooms or bathrooms
-    room_centroids  = [(198, 87), (174, 166)]
-    bathroom_centroids = [(51, 169), (155, 91)]
-    kitchen_centroids = [(44, 105)]
+    # # Data of the inner rooms or bathrooms
+    # room_centroids  = [(198, 87), (174, 166)]
+    # bathroom_centroids = [(51, 169), (155, 91)]
+    # kitchen_centroids = [(44, 105)]
     
     # ========================================================================
     # Preprocessing
@@ -152,5 +158,17 @@ if __name__ == '__main__':
     output = FloorPlan_multipolygon(G_not_normalized, prediction)
     polygons = output.get_multipoly(Boundary_as_polygon, the_door)
     polygons.plot(cmap='twilight', figsize=(4, 4), alpha=0.8, linewidth=0.8, edgecolor='black');
-    plt.savefig('hello.png')
+    plt.axis('off')
+    
+    #=========================================================================
+    # Saving the output & Updating to the firebase
+    unique_name = str(uuid.uuid4()) + str(int(time.time()))  + ".png"
+    if not os.path.exists("./outputs"):
+        os.mkdir("outputs")
+    plt.savefig("outputs/" + unique_name)
+
+    image_url = upload_to_firebase(unique_name)
+    
+    
+    print(image_url)
     print("Done")
