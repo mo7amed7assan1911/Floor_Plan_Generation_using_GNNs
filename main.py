@@ -36,16 +36,16 @@ def preProcessing_toGraphs(Boundary, front_door, room_centroids, bathroom_centro
     
     
     # Flip the y axis of all polygons and points
-    Boundary = scale(Boundary)
-    front_door = scale(front_door)
-    room_centroids = [scale(x) for x in room_centroids]
-    bathroom_centroids = [scale(x) for x in bathroom_centroids]
-    kitchen_centroids = [scale(x) for x in kitchen_centroids]
-        
-    # Retruning the centroids of the rooms and bathrooms from Point to tuple
-    room_centroids = [x.coords[0] for x in room_centroids]
-    bathroom_centroids = [x.coords[0] for x in bathroom_centroids]
-    kitchen_centroids = [x.coords[0] for x in kitchen_centroids]
+    # Boundary = scale(Boundary)
+    # front_door = scale(front_door)
+    # room_centroids = [scale(x) for x in room_centroids]
+    # bathroom_centroids = [scale(x) for x in bathroom_centroids]
+    # kitchen_centroids = [scale(x) for x in kitchen_centroids]
+    
+    # # Retruning the centroids of the rooms and bathrooms from Point to tuple
+    # room_centroids = [x.coords[0] for x in room_centroids]
+    # bathroom_centroids = [x.coords[0] for x in bathroom_centroids]
+    # kitchen_centroids = [x.coords[0] for x in kitchen_centroids]
             
     living_centroid    = [(Boundary.centroid.x, Boundary.centroid.y)]
     
