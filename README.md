@@ -1,6 +1,6 @@
-# Residential Floor Plan Generation Using Deep Learning Techniques
+# Gaduation Project: Residential Floor Plan Generation Using Deep Learning Techniques
 
-> Our **Graduation project** provides a user-friendly software solution that minimizes the gap between the complexity of designing residential floor plans and the capabilities of non-technical users. users can input the boundary of their piece of ground and their preferences which are then seamlessly processed by our advanced AI model to generate customized floor plans. 
+> Our project provides a user-friendly software solution that minimizes the gap between the complexity of designing residential floor plans and the capabilities of non-technical users. users can input the boundary of their piece of ground and their preferences which are then seamlessly processed by our advanced AI model to generate customized floor plans. 
 
 
 ![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/6fa02b98-ebc2-4282-b3f9-fb056de70171)
