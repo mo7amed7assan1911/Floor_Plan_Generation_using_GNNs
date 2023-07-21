@@ -79,6 +79,7 @@
 ### Results of the GAT-Net model on the test set
 ![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/b05d85ff-c45a-4f2e-9ac3-163819c2ebdc)
 > You could see how we tested our model on the test set from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/GAT-Net_model/Testing_GAT-Net_model.ipynb)
+---
 
 ## You could see results from the whole architecture based on the user inputs from the `Outputs folder` [here](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/tree/with-boundary/Outputs)
 ## Or you could directly run the `main.py` file that takes inputs from the CNN model. But don't worry I provided an example in it.
