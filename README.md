@@ -10,7 +10,7 @@
 - First, we converted the image-based RPlan dataset to a geometry-based dataset, this conversion helped us with some benefits:
   - Accurate Representation.
   - Geometric Operations such as buffers, and intersections.
-- Then, we created a customized dataset as **Graphs** to be a new version of the Rplan floor plans. This conversion helped us train the **GAT-Net** model.
+- Then, we created a customized dataset as **Graphs** to be a new version of the Rplan floor plans. This conversion helped us train the **GAT-Net** model. you can see this work from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/Creating_Dataset/generating-graphs.ipynb)
 
 ## Our full architecture consists of 2 stages:
 1. Predicting room centroids. Using CNN model.
