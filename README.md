@@ -37,7 +37,7 @@
 
 > You could see how this work is done from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/Creating_Dataset/generating-graphs.ipynb).
 > 
-> Below, is a floor plan from the dataset and the corresponding generated graphs.
+> Below, is a floor plan from the source dataset as images and the corresponding generated graphs.
 
 ![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/3e49c78e-f1e5-49a6-8dd3-23b1ce8151f1)
 > **We utilized the Living-to-All connection type in our model** since the coming centroids from the CNN model lack information about the real connections between these nodes.
@@ -48,13 +48,17 @@
 > * During our experimentation, for classifying room types model we compared the performance of two types of graph convolutional layers: Graph Convolutional Networks (GCN) and Graph Attention Networks (GAT) in 50 epochs
 >     * GCN achieved 68% accuracy.
 >     * GAT achieved 94% accuracy, due to its attention mechanism.
->   
+>  
 > For this reason and the usage of the attention mechanism, I decided to use the GATConv layers as the core of our model.
+> 
+>  You can see how this work is done from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/Classifying_node_types/classifying_node_types.ipynb)
 
 #### How we handled the problem of Over Smoothing after just 2 layers in Graph Neural Networks
 > To address this, we introduced the concept of residual connections. However, instead of employing skip connections, we utilized CONCATENATION connections to preserve and retain the essential features during the learning process.
 ---
 ## GAT-Net model: A Residual Graph Attention Network for Floor Plan Analysis.
+> Name GAT-Net because The core of our model is the Graph Attention Network (GAT) architecture, customized for floor plan analysis, and to highlight its ability to extract meaningful insights from floor plan graphs using attention mechanisms.
+
 ![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/8df287fe-252f-4884-aa90-a21eeb1bb118)
 
 ### Train process
@@ -68,6 +72,10 @@
 > Below, is the training chart
 
 ![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/e9dbaf2d-b3d2-4cbd-8883-691099102aad)
+> You could see how the GAT-Net is designed and implemented from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/GAT-Net_model/GAT-Net_Model.ipynb).
 ---
 ### Results of the GAT-Net model on the test set
 ![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/b05d85ff-c45a-4f2e-9ac3-163819c2ebdc)
+> You could see how we tested our model on the test set from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/GAT-Net_model/Testing_GAT-Net_model.ipynb)
+
+## You could see results from the whole architecture based on the user inputs from the `Outputs folder` [here](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/tree/with-boundary/Outputs)
