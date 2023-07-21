@@ -57,3 +57,17 @@
 ## GAT-Net model: A Residual Graph Attention Network for Floor Plan Analysis.
 ![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/8df287fe-252f-4884-aa90-a21eeb1bb118)
 
+### Train process
+* The training process of GAT-Net involved training the model on an Nvidia P100 GPU with specific hyperparameters:
+	* Number of Epochs = 300 epoc epo.
+	* Learning Rate = 0.001
+	* Optimizer: Adam
+	* weight decay: 3e-5
+	* Loss: Mean Square Error (MSE)
+	* LR Scheduler gamma value: 0.950.
+> Below, is the training chart
+
+![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/e9dbaf2d-b3d2-4cbd-8883-691099102aad)
+---
+### Results of the GAT-Net model on the test set
+![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/b05d85ff-c45a-4f2e-9ac3-163819c2ebdc)
