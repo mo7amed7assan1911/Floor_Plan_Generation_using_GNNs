@@ -2,6 +2,9 @@
 
 > Our project provides a user-friendly software solution that minimizes the gap between the complexity of designing residential floor plans and the capabilities of non-technical users. users can input the boundary of their piece of ground and their preferences which are then seamlessly processed by our advanced AI model to generate customized floor plans. 
 
+
+![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/6fa02b98-ebc2-4282-b3f9-fb056de70171)
+
 ## Dataset
 - The source dataset is [Rplan Dataset](http://staff.ustc.edu.cn/~fuxm/projects/DeepLayout/index.html), it is a dataset consists of about 80k floor plans as images.
 - First, we converted the image-based RPlan dataset to a geometry-based dataset, this conversion helped us with some benefits:
