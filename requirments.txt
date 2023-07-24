@@ -1,0 +1,8 @@
+
+torch_geometric
+networkx
+matplotlib
+numpy
+shapely
+geopandas
+distinctipy
