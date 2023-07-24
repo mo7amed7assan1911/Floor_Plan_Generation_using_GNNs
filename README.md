@@ -84,5 +84,34 @@
 > You could see how we tested our model on the test set from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/GAT-Net_model/Testing_GAT-Net_model.ipynb)
 ---
 
-## You could see results from the whole architecture based on the user inputs from the `Outputs folder` [here](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/tree/with-boundary/Outputs)
-## Or you could directly run the `main.py` file that takes inputs from the CNN model. But don't worry I provided an example in it.
+## Getting Started
+To get started with the project, you need to install the required dependencies.
+> Thses steps will help you run the `main.py` and User_constrains_to_floor_plan.ipynb files. As, they don't need the dataset to be downloaded.
+
+### Dependencies
+* Python > 3.9
+* requirements.txt
+
+### Installation
+1. Clone the repo
+```bash
+git clone https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs.git
+cd Floor_Plan_Generation_using_GNNs
+```
+2. install the required dependencies
+```bash
+pip install -r requirements.txt
+```
+### For Docker users
+Run the following commands to build the docker image and run the container
+```bash
+docker run mo7amed7assan1911/floor-plan-generation-using-gnns:latest
+```
+## How to test the GAT-Net model
+
+> * You could test the model on the testset from this [notebook](GA-Net_model/Testing_GAT-Net_model.ipynb).
+>
+> * You could use the [User_constrains_to_floor_plan.ipynb](User_constrains_to_floor_plan.ipynb) notebook to get the user inputs and then test the model on them.
+>
+> * You could directly run the `main.py` file which needs inputs from the CNN model, but I provided an example inside it.
+
