@@ -36,16 +36,16 @@ def preProcessing_toGraphs(Boundary, front_door, room_centroids, bathroom_centro
     
     
     # Flip the y axis of all polygons and points
-    # Boundary = scale(Boundary)
-    # front_door = scale(front_door)
-    # room_centroids = [scale(x) for x in room_centroids]
-    # bathroom_centroids = [scale(x) for x in bathroom_centroids]
-    # kitchen_centroids = [scale(x) for x in kitchen_centroids]
+    Boundary = scale(Boundary)
+    front_door = scale(front_door)
+    room_centroids = [scale(x) for x in room_centroids]
+    bathroom_centroids = [scale(x) for x in bathroom_centroids]
+    kitchen_centroids = [scale(x) for x in kitchen_centroids]
     
-    # # Retruning the centroids of the rooms and bathrooms from Point to tuple
-    # room_centroids = [x.coords[0] for x in room_centroids]
-    # bathroom_centroids = [x.coords[0] for x in bathroom_centroids]
-    # kitchen_centroids = [x.coords[0] for x in kitchen_centroids]
+    # Retruning the centroids of the rooms and bathrooms from Point to tuple
+    room_centroids = [x.coords[0] for x in room_centroids]
+    bathroom_centroids = [x.coords[0] for x in bathroom_centroids]
+    kitchen_centroids = [x.coords[0] for x in kitchen_centroids]
             
     living_centroid    = [(Boundary.centroid.x, Boundary.centroid.y)]
     
@@ -110,31 +110,21 @@ def preProcessing_toGraphs(Boundary, front_door, room_centroids, bathroom_centro
     B_not_normalized.x[:, -2] = B_not_normalized.x[:, -2] * B_x_std + B_x_mean
     B_not_normalized.x[:, -1] = B_not_normalized.x[:, -1] * B_y_std + B_y_mean
 
-    return G, B, G_not_normalized, B_not_normalized, Boundary, front_door
+    return G, B, G_not_normalized, B_not_normalized, Boundary, front_door, B_n, G_n
 
 
-
-
-
-
-if __name__ == '__main__':
     
+def Run(Boundary, front_door, room_centroids, bathroom_centroids, kitchen_centroids):
     # Get the data
-    Boundary, front_door, room_centroids, bathroom_centroids, kitchen_centroids = get_info()
-    
-    # Boundary = "POLYGON ((58.18181818181817 69.85672370603027, 230.4 69.85672370603027, 230.4 105.54157219087877, 211.7818181818182 105.54157219087877, 211.7818181818182 200.183996433303, 25.599999999999994 200.183996433303, 25.599999999999994 58.99611764542421, 58.18181818181817 58.99611764542421, 58.18181818181817 69.85672370603027))"
-
-    # front_door = "POLYGON ((56.16288055733307 55.816003566697006, 30.721967927515397 55.816003566697006, 30.721967927515397 58.99611764542421, 56.16288055733307 58.99611764542421, 56.16288055733307 55.816003566697006))"
-
-    # # Data of the inner rooms or bathrooms
-    # room_centroids  = [(198, 87), (174, 166)]
-    # bathroom_centroids = [(51, 169), (155, 91)]
-    # kitchen_centroids = [(44, 105)]
+    # Boundary, front_door, room_centroids, bathroom_centroids, kitchen_centroids = get_info()
     
     # ========================================================================
     # Preprocessing
-    G, B, G_not_normalized, B_not_normalized, Boundary_as_polygon, front_door_as_polygon = preProcessing_toGraphs(Boundary, front_door, room_centroids, bathroom_centroids, kitchen_centroids)
+    G, B, G_not_normalized, B_not_normalized, Boundary_as_polygon, front_door_as_polygon, B_n, G_n = preProcessing_toGraphs(Boundary, front_door, room_centroids, bathroom_centroids, kitchen_centroids)
     the_door = Point(B_not_normalized.x[-1][1:].detach().cpu().numpy()).buffer(3)
+    
+    # geeing the corresponding graph for the inputs of the user
+    
     #=========================================================================
     # Model
     # model_path = r"D:\Grad\Best models\v2\Best_model_V2.pt"
@@ -158,17 +148,23 @@ if __name__ == '__main__':
     output = FloorPlan_multipolygon(G_not_normalized, prediction)
     polygons = output.get_multipoly(Boundary_as_polygon, the_door)
     polygons.plot(cmap='twilight', figsize=(4, 4), alpha=0.8, linewidth=0.8, edgecolor='black');
-    plt.axis('off')
     
     #=========================================================================
     # Saving the output & Updating to the firebase
-    unique_name = str(uuid.uuid4()) + str(int(time.time()))  + ".png"
-    if not os.path.exists("./outputs"):
-        os.mkdir("outputs")
-    plt.savefig("outputs/" + unique_name)
+    # unique_name = str(uuid.uuid4())
+    # if not os.path.exists("./Outputs"):
+    #     os.mkdir("Outputs/" + unique_name)
+    # plt.savefig("Outputs/" + '/Output.png')
+    # image_url = upload_to_firebase(unique_name)
+    # print(image_url)
+    # print("Done")
+    
+    
+    path = "Outputs/model_output.png"
+    plt.savefig(path)
+    plt.close()
+    return path, B_n, G_n
 
-    image_url = upload_to_firebase(unique_name)
-    
-    
-    print(image_url)
-    print("Done")
+
+if __name__ == '__main__':
+    Run()
