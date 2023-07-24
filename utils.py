@@ -22,8 +22,6 @@ from shapely.ops import unary_union
 import shapely.affinity as aff
 from shapely.wkt import loads
 import geopandas as gpd
-# to show advance in for loops
-from tqdm import tqdm
 
 room_embeddings = {
     'living': 0,
@@ -199,25 +197,124 @@ def centroids_to_graph(floor_plan, living_to_all=False, all_conected=False):
                     other_node_centeroid = Point(G.nodes[other_node]['actualCentroid_x'], G.nodes[other_node]['actualCentroid_y'])
 
                     dis = current_node_centeroid.distance(other_node_centeroid)
-                    # adding edges between the the current node and the other nodes
+                    # adding edges between the the c urrent node and the other nodes
                     G.add_edge(node, other_node, distance=round(dis, 3))
 
     return G
 
+def boundary_to_image(boundary_wkt, front_door_wkt):
+    """
+    Taking the boundary and the front door as polygons and return them as Image.   
+    """
+    boundary = shapely.wkt.loads(boundary_wkt)
+    front_door = shapely.wkt.loads(front_door_wkt)
+    
+    boundary = scale(boundary)
+    front_door = scale(front_door)
+    
+    plt.figure(figsize=(5, 5))
+    gpd.GeoSeries([boundary, front_door]).plot(cmap='tab10');
+    # plt.xlim(0, 256);
+    # plt.ylim(0, 256);
+    
+    path = os.getcwd() + "/Outputs/boundary.png"
+    plt.savefig(path)
+    plt.close()
+    
+    return path
+    
+def get_user_inputs_as_image(boundary_wkt, front_door_wkt, room_centroids, bathroom_centroids, kitchen_centroids):
+    """
+        Covert the user inputs [boundary, front_door, centroids] to an image.
+        to be more understandable.
+    """
+    boundary = shapely.wkt.loads(boundary_wkt)
+    front_door = shapely.wkt.loads(front_door_wkt)
+    
+    boundary = scale(boundary)
+    front_door = scale(front_door)
+    room_centroids = [scale(x) for x in room_centroids]
+    bathroom_centroids = [scale(x) for x in bathroom_centroids]
+    kitchen_centroids = [scale(x) for x in kitchen_centroids]
+    
+    polys = defaultdict(list)
+
+    for center in room_centroids:
+        polys['room'].append(center)
+
+    for center in bathroom_centroids:
+        polys['bathroom'].append(center)
+
+    for center in kitchen_centroids:
+        polys['kitchen'].append(center)
+
+    Input_format = []
+    Input_format.append(boundary)
+    Input_format.append(front_door)
+
+    for _, poly_list in polys.items():
+        Input_format.append(unary_union(poly_list))
+
+    Input_format = gpd.GeoSeries(Input_format)
+    Input_format.plot(cmap='twilight', alpha=0.8, linewidth=0.8, edgecolor='black');
+    
+    # plt.xlim(0, 256);
+    # plt.ylim(0, 256);
+    
+    path = os.getcwd() + '/Outputs/user_inputs.png'
+    plt.savefig(path)
+    plt.close()
+    
+    return path
+
+def draw_graph(G):
+    """
+    This function is used to draw the graph of rooms and user constrains.
+    """
+    #  nodes positions for drawing, note that we invert the y pos
+    pos = {node: (G.nodes[node]['actualCentroid_x'], G.nodes[node]['actualCentroid_y']) for node in G.nodes}
+    
+    colormap = [room_color[G.nodes[node]['roomType_name']]/255 for node in G]
+    
+    nx.draw(G, pos=pos, node_color=colormap, with_labels=True, font_size=12)
+    
+    # plt.xlim(-10, 266)
+    # plt.ylim(-266, 10)
+    
 def draw_graph_boundary(G):
     """
     This function is used to draw the graph of the boundary of the floor plan.
     """
     
     #  nodes positions for drawing, note that we invert the y pos
-    pos = {node: (G.nodes[node]['centroid'][0], -G.nodes[node]['centroid'][1])  for node in G.nodes}
+    pos = {node: (G.nodes[node]['centroid'][0], G.nodes[node]['centroid'][1])  for node in G.nodes}
     
     door_color = '#90EE90'
     other_nodes_color = '#0A2A5B'
     color_map = [door_color if G.nodes[node]['type'] == 1 else other_nodes_color for node in G.nodes]
     
     nx.draw(G, pos=pos, with_labels=True, node_color=color_map, font_color='w', font_size=12)
-
+    
+    # plt.xlim(-10, 266)
+    # plt.ylim(-266, 10)
+    
+def draw_both_graphs(boundary_graph, entire_graph):
+    # Create a new figure
+    plt.figure()
+    
+    # Draw the boundary graph
+    draw_graph_boundary(boundary_graph)
+        
+    # Draw the entire graph
+    draw_graph(entire_graph)
+    
+    # Save the figure as an image
+    path = os.getcwd() + '/Outputs/both_graphs.png'
+    plt.savefig(path)
+    plt.close()  # Close the figure to free up resources
+    
+    return path
+    
 def scale(x):
     if isinstance(x, tuple):
         x = Point(*x)
