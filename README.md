@@ -72,9 +72,7 @@
 	* weight decay: 3e-5
 	* Loss: Mean Square Error (MSE)
 	* LR Scheduler gamma value: 0.950.
-> Below, is the training chart
 
-![image](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/assets/55090589/e9dbaf2d-b3d2-4cbd-8883-691099102aad)
 > You could see how the GAT-Net is designed and implemented from this [notebook](https://github.com/mo7amed7assan1911/Floor_Plan_Generation_using_GNNs/blob/with-boundary/GAT-Net_model/GAT-Net_Model.ipynb).
 >
 > Or you could run directly the `main.py` file which needs inputs from the CNN model, but I provided an example inside it.
